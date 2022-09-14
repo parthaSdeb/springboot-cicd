@@ -1,0 +1,30 @@
+plugins {
+	id 'org.springframework.boot' version '2.7.3'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'war'
+	id "org.sonarqube" version "3.3"
+}
+
+group = 'com.example'
+version = ''
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// tag::actuator[]
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	// end::actuator[]
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// tag::tests[]
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	// end::tests[]
+}
+
+test {
+	useJUnitPlatform()
+}
+
