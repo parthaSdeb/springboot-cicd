@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: springboot-cicd-container
-        image: registry.tirzok.com:5000/springboot-cicd:39
+        image: registry.tirzok.com:5000/springboot-cicd
         resources:
           limits:
             memory: "128Mi"
