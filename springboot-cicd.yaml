@@ -13,11 +13,11 @@ spec:
     spec:
       containers:
       - name: springboot-cicd-container
-        image: registry.tirzok.com:5000/springboot-cicd
+        image: registry.tirzok.com:5000/springboot-cicd:39
         resources:
           limits:
-            memory: "64Mi"
-            cpu: "100m"
+            memory: "128Mi"
+            cpu: "200m"
         ports:
         - containerPort: 8080
 
@@ -27,7 +27,7 @@ kind: Service
 metadata:
   name: springboot-cicd-svc
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: springboot-cicd
   ports:
