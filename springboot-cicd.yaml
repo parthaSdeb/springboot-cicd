@@ -27,7 +27,7 @@ kind: Service
 metadata:
   name: springboot-cicd-svc
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: springboot-cicd
   ports:
