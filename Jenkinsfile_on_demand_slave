@@ -1,0 +1,102 @@
+pipeline {
+  
+  environment{
+        
+        registry = "registry.tirzok.com:5000/springboot-cicd-dynamic"
+        dockerImage = ''
+  }  
+  
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+            - name: gradle-container
+              image: gradle:jdk11-alpine
+              command:
+              - cat
+              tty: true
+            - name: docker-container
+              image: docker:latest
+              command:
+              - cat
+              tty: true
+              volumeMounts:
+                - mountPath: /var/run/docker.sock
+                  name: docker-sock
+          volumes:
+            - name: docker-sock
+              hostPath:
+                path: /var/run/docker.sock    
+        '''
+    }
+  }    
+ 
+        
+    stages {
+            
+        stage('clone the repo inside gradle contianer'){
+            steps {
+                container('gradle-container'){
+                    git branch: 'master', changelog: false, poll: false, url: 'https://github.com/parthaSdeb/springboot-cicd.git'
+                }
+            }
+        }
+        
+        stage('Build war file'){
+            steps{
+                container('gradle-container'){
+                    sh './gradlew clean bootWar'
+                }
+            }
+        }
+        
+        stage('build image'){
+            steps{
+                container('docker-container'){
+                    script{
+                        dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                        
+                    }
+                    
+                }
+            }
+        }
+        
+        stage('push image to registry'){
+            steps{
+                container('docker-container'){
+                    script {
+                    
+                      docker.withRegistry( ''){
+                        dockerImage.push()
+                      }
+                  }
+                }
+            }
+        }
+        
+        stage('clean up the image'){
+            steps{
+                container('docker-container'){
+                    
+                 sh "docker image rm -f $registry:$BUILD_NUMBER"
+                }
+            }
+        }
+        
+        stage('Modifying deployment file'){
+            steps{
+                echo "*************************** Trigger update deployment manifest job *****************************"
+                
+                echo "the build no is: $BUILD_NUMBER"
+                
+                build job: 'update-deployment', parameters: [string(name: 'DockerTag', value: env.BUILD_NUMBER)]
+                
+            
+            }
+        }
+    }
+}
