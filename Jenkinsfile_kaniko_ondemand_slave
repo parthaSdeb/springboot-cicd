@@ -1,0 +1,73 @@
+pipeline {
+  
+  environment{
+        
+        registry = "192.168.122.205:5000"
+        app_name = "springboot-cicd-dynamic"
+        image_name = "${registry}" + "/" + "${app_name}"
+        dockerImage = ''
+  }  
+  
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+            - name: gradle-container
+              image: gradle:jdk11-alpine
+              command:
+              - cat
+              tty: true
+            - name: kaniko-container
+              image: gcr.io/kaniko-project/executor:debug
+              command:
+              - cat
+              tty: true
+        '''
+    }
+  }    
+ 
+        
+    stages {
+            
+        stage('clone the repo inside gradle contianer'){
+            steps {
+                container('gradle-container'){
+                    git branch: 'master', changelog: false, poll: false, url: 'https://github.com/parthaSdeb/springboot-cicd.git'
+                }
+            }
+        }
+        
+        stage('Build war file'){
+            steps{
+                container('gradle-container'){
+                    sh './gradlew clean bootWar'
+                }
+            }
+        }
+        
+        stage('build image'){
+            steps{
+                container('kaniko-container'){
+                  sh "/kaniko/executor --context $WORKSPACE --insecure --insecure-registry $registry --destination $image_name:$BUILD_NUMBER"
+                    
+                }
+            }
+        }
+        
+        
+        stage('Modifying deployment file'){
+            steps{
+                echo "*************************** Trigger update deployment manifest job *****************************"
+                
+                echo "the build no is: $BUILD_NUMBER"
+                
+                build job: 'update-deployment', parameters: [string(name: 'DockerTag', value: env.BUILD_NUMBER)]
+                
+            
+            }
+        }
+    }
+}
