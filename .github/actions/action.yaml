@@ -1,0 +1,14 @@
+name: 'Set enviornment variable'
+author: 'Partha Deb'
+description: 'configuring enviornemtn variable for a workflow'
+inputs:
+  varFilepath:
+    description: 'loading var file'
+    required: false
+    default: ./.github/variables/*
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        sed "" ${{ inputs.varFilePath }} >> $GITHUB_ENV
+      shell: bash
