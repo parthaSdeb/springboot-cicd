@@ -8,19 +8,24 @@ on: workflow_dispatch
   #   branches: [master]
 
 jobs:
-  build_artifact:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
 
-    - name: install jdk
-    - uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+  initialization:
+    runs-on: ubuntu-20.04
+    steps: 
 
-    - name: Providing gradle execution permission.
-      run: chmod +x gradlew
+  # build_artifact:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
 
-    - name: Build artifact with gradle.
-      run: ./gradlew clean bootWar
+  #   - name: install jdk
+  #   - uses: actions/setup-java@v3
+  #     with:
+  #       distribution: 'temurin'
+  #       java-version: '17'
+
+  #   - name: Providing gradle execution permission.
+  #     run: chmod +x gradlew
+
+  #   - name: Build artifact with gradle.
+  #     run: ./gradlew clean bootWar
